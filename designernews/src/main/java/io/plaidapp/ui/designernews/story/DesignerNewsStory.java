@@ -49,6 +49,7 @@ import android.text.Spanned;
 import android.text.TextUtils;
 import android.text.format.DateUtils;
 import android.text.style.TextAppearanceSpan;
+import android.util.Log;
 import android.util.TypedValue;
 import android.view.View;
 import android.view.ViewAnimationUtils;
@@ -90,6 +91,7 @@ import io.plaidapp.ui.transitions.MorphTransform;
 import io.plaidapp.base.ui.widget.CollapsingTitleLayout;
 import io.plaidapp.ui.widget.ElasticDragDismissFrameLayout;
 import io.plaidapp.ui.widget.PinnedOffsetView;
+import io.plaidapp.designernews.data.api.DesignerNewsCommentsRepository;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -118,8 +120,12 @@ public class DesignerNewsStory extends Activity {
     private int fabExpandDuration;
     private int threadWidth;
     private int threadGap;
+    private View enterCommentView;
 
     private Story story;
+
+    private DesignerNewsCommentsRepository commentsRepository;
+
     private DesignerNewsPrefs designerNewsPrefs;
     private Bypass markdown;
     private CustomTabActivityHelper customTab;
@@ -129,9 +135,20 @@ public class DesignerNewsStory extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_designer_news_story);
 
+        commentsRepository = Injection.provideDesignerNewsCommentsRepository();
         bindResources();
 
         story = getIntent().getParcelableExtra(Activities.DesignerNews.Story.EXTRA_STORY);
+
+        commentsRepository.getComments(story.links.getComments(),
+                comments -> {
+                    Log.d("flo", "comments " + comments);
+                    setupComments(enterCommentView, (List<Comment>) comments);
+                    return Unit.INSTANCE;
+                }, error -> {
+                    Log.e("flo", "error" + error);
+                    return Unit.INSTANCE;
+                });
 
         fab.setOnClickListener(fabClick);
         chromeFader = new ElasticDragDismissFrameLayout.SystemChromeFader(this);
@@ -181,23 +198,26 @@ public class DesignerNewsStory extends Activity {
             findViewById(R.id.back).setOnClickListener(backClick);
         }
 
-        final View enterCommentView = setupCommentField();
-        if (story.comments != null && story.comments.size() > 0) {
+        enterCommentView = setupCommentField();
+        commentsAdapter = new DesignerNewsCommentsAdapter(
+                header, new ArrayList<>(0), enterCommentView);
+        commentsList.setAdapter(commentsAdapter);
+
+        customTab = new CustomTabActivityHelper();
+        customTab.setConnectionCallback(customTabConnect);
+    }
+
+    private void setupComments(View enterCommentView, List<Comment> comments) {
+        if (comments.size() > 0) {
             // flatten the comments from a nested structure {@see Comment#comments} to a
             // list appropriate for our adapter (using the depth attribute).
             List<Comment> flattened = new ArrayList<>(story.comment_count);
-            unnestComments(story.comments, flattened);
+            unnestComments(comments, flattened);
             commentsAdapter =
                     new DesignerNewsCommentsAdapter(header, flattened, enterCommentView);
             commentsList.setAdapter(commentsAdapter);
 
-        } else {
-            commentsAdapter = new DesignerNewsCommentsAdapter(
-                    header, new ArrayList<>(0), enterCommentView);
-            commentsList.setAdapter(commentsAdapter);
         }
-        customTab = new CustomTabActivityHelper();
-        customTab.setConnectionCallback(customTabConnect);
     }
 
     private void bindResources() {
@@ -306,7 +326,7 @@ public class DesignerNewsStory extends Activity {
     private void updateFabVisibility() {
         // the FAB position can interfere with the enter comment field. Hide the FAB if:
         // - The comment field is scrolled onto screen
-        // - The comment field is focused (i.e. stories with no/few commentLinks might not push the
+        // - The comment field is focused (i.e. stories with no/few comments might not push the
         //   enter comment field off-screen so need to make sure the button is accessible
         // - A comment reply field is focused
         final boolean enterCommentFocused = enterComment.isFocused();
