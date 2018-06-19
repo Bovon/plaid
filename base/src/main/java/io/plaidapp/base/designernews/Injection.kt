@@ -25,6 +25,7 @@ import com.jakewharton.retrofit2.adapter.kotlin.coroutines.experimental.Coroutin
 import io.plaidapp.base.BuildConfig
 import io.plaidapp.base.data.api.ClientAuthInterceptor
 import io.plaidapp.base.data.api.DenvelopingConverter
+import io.plaidapp.base.designernews.data.api.DesignerNewsCommentsRepository
 import io.plaidapp.base.designernews.data.api.DesignerNewsRepository
 import io.plaidapp.base.designernews.data.api.DesignerNewsService
 import io.plaidapp.base.designernews.login.data.DesignerNewsLoginLocalStorage

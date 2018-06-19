@@ -70,27 +70,29 @@ import java.util.Date;
 import java.util.List;
 
 import in.uncod.android.bypass.Bypass;
+import io.plaidapp.base.designernews.DesignerNewsPrefs;
+import io.plaidapp.base.designernews.Injection;
+import io.plaidapp.base.designernews.data.api.DesignerNewsCommentsRepository;
+import io.plaidapp.base.designernews.data.api.model.Comment;
+import io.plaidapp.base.designernews.data.api.model.Story;
 import io.plaidapp.base.designernews.data.api.model.User;
+import io.plaidapp.base.ui.transitions.GravityArcMotion;
+import io.plaidapp.base.ui.transitions.ReflowText;
+import io.plaidapp.base.ui.widget.CollapsingTitleLayout;
+import io.plaidapp.base.util.Activities;
 import io.plaidapp.base.util.HtmlUtils;
+import io.plaidapp.base.util.ImeUtils;
 import io.plaidapp.base.util.ViewUtils;
+import io.plaidapp.base.util.customtabs.CustomTabActivityHelper;
 import io.plaidapp.base.util.glide.GlideApp;
 import io.plaidapp.base.util.glide.ImageSpanTarget;
 import io.plaidapp.designernews.R;
-import io.plaidapp.base.designernews.DesignerNewsPrefs;
-import io.plaidapp.base.designernews.data.api.model.Comment;
-import io.plaidapp.base.designernews.data.api.model.Story;
-import io.plaidapp.base.ui.transitions.GravityArcMotion;
-import io.plaidapp.base.ui.transitions.ReflowText;
-import io.plaidapp.base.util.Activities;
-import io.plaidapp.base.util.ImeUtils;
-import io.plaidapp.base.util.customtabs.CustomTabActivityHelper;
 import io.plaidapp.ui.designernews.DesignerNewsLogin;
 import io.plaidapp.ui.drawable.ThreadedCommentDrawable;
 import io.plaidapp.ui.transitions.MorphTransform;
-import io.plaidapp.base.ui.widget.CollapsingTitleLayout;
 import io.plaidapp.ui.widget.ElasticDragDismissFrameLayout;
 import io.plaidapp.ui.widget.PinnedOffsetView;
-import io.plaidapp.designernews.data.api.DesignerNewsCommentsRepository;
+import kotlin.Unit;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -485,7 +487,7 @@ public class DesignerNewsStory extends Activity {
         if (story.user_display_name != null && story.user_job != null) {
             SpannableString poster = new SpannableString(story.user_display_name.toLowerCase());
             poster.setSpan(new TextAppearanceSpan(this, io.plaidapp.R.style
-                    .TextAppearance_CommentAuthor),
+                            .TextAppearance_CommentAuthor),
                     0, poster.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
             CharSequence job =
                     !TextUtils.isEmpty(story.user_job) ? "\n" + story.user_job.toLowerCase() : "";
